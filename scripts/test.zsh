@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
-# ANSI QuickLook Test Suite Runner
+# ANSITime Test Suite Runner
 # Usage:
 #   ./scripts/test.zsh          # Run native unit tests via Swift Package Manager
 #   ./scripts/test.zsh --docker # Run containerized test suite via Docker

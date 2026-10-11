@@ -52,7 +52,7 @@ public struct AnsiPreviewTemplate: Sendable {
         <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>ANSI QuickLook</title>
+            <title>ANSITime</title>
             <style>
                 \(WebAssets.css)
 

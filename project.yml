@@ -1,4 +1,4 @@
-name: ANSIQuickLook
+name: ANSITime
 options:
   bundleIdPrefix: io.bino
   deploymentTarget:
@@ -21,37 +21,39 @@ targets:
       SWIFT_VERSION: "5.9"
       SKIP_INSTALL: "YES"
 
-  ANSIQuickLookPreview:
+  ANSITimeQuickLook:
     type: app-extension
     platform: macOS
     sources:
-      - path: Sources/ANSIQuickLookPreview
+      - path: Sources/ANSITimeQuickLook
     dependencies:
       - target: AnsiCore
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: io.bino.ansi-quicklook.preview
-      INFOPLIST_FILE: Sources/ANSIQuickLookPreview/Info.plist
+      PRODUCT_NAME: ANSITimeQuickLook
+      PRODUCT_BUNDLE_IDENTIFIER: io.bino.ansitime.quicklook
+      INFOPLIST_FILE: Sources/ANSITimeQuickLook/Info.plist
       GENERATE_INFOPLIST_FILE: "NO"
-      CODE_SIGN_ENTITLEMENTS: Sources/ANSIQuickLookPreview/ANSIQuickLookPreview.entitlements
+      CODE_SIGN_ENTITLEMENTS: Sources/ANSITimeQuickLook/ANSITimeQuickLook.entitlements
       SWIFT_VERSION: "5.9"
       ENABLE_HARDENED_RUNTIME: "YES"
       CODE_SIGN_STYLE: Automatic
       SKIP_INSTALL: "YES"
 
-  ANSIQuickLook:
+  ANSITime:
     type: application
     platform: macOS
     sources:
-      - path: Sources/ANSIQuickLook
+      - path: Sources/ANSITime
     dependencies:
       - target: AnsiCore
-      - target: ANSIQuickLookPreview
+      - target: ANSITimeQuickLook
       - package: Sparkle
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: io.bino.ansi-quicklook
-      INFOPLIST_FILE: Sources/ANSIQuickLook/Info.plist
+      PRODUCT_NAME: ANSITime
+      PRODUCT_BUNDLE_IDENTIFIER: io.bino.ansitime
+      INFOPLIST_FILE: Sources/ANSITime/Info.plist
       GENERATE_INFOPLIST_FILE: "NO"
-      CODE_SIGN_ENTITLEMENTS: Sources/ANSIQuickLook/ANSIQuickLook.entitlements
+      CODE_SIGN_ENTITLEMENTS: Sources/ANSITime/ANSITime.entitlements
       SWIFT_VERSION: "5.9"
       ENABLE_HARDENED_RUNTIME: "YES"
       CODE_SIGN_STYLE: Automatic

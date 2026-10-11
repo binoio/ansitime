@@ -76,7 +76,7 @@ public struct ContentView: View {
                         .padding(24)
                 }
             }
-            .navigationTitle(selectedURL?.lastPathComponent ?? "ANSI QuickLook")
+            .navigationTitle(selectedURL?.lastPathComponent ?? "ANSITime")
             .inspector(isPresented: $showInspector) {
                 SauceInspectorView(sauce: currentDocument?.sauce)
                     .inspectorColumnWidth(min: 240, ideal: 280, max: 320)
@@ -161,7 +161,7 @@ public struct ContentView: View {
                 .font(.system(size: 48))
                 .foregroundColor(.green.opacity(0.8))
 
-            Text("ANSI QuickLook")
+            Text("ANSITime")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
@@ -186,7 +186,7 @@ public struct ContentView: View {
                 Button("Done") { showQuickLookStatus = false }
             }
 
-            Text("ANSI QuickLook includes a Finder Quick Look plugin for spacebar previews of .ans, .asc, and .diz files.")
+            Text("ANSITime includes ANSITime QuickLook, a Finder Quick Look plugin for spacebar previews of .ans, .asc, and .diz files.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
@@ -197,14 +197,14 @@ public struct ContentView: View {
                     .fontWeight(.semibold)
                 Text("1. In Finder, highlight any `.ans` file.")
                 Text("2. Press the **Spacebar**.")
-                Text("3. Quick Look will instantly render the authentic fTelnet BBS splash screen.")
+                Text("3. ANSITime QuickLook will instantly render the authentic fTelnet BBS splash screen.")
             }
             .font(.caption)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("If Quick Look is disabled in macOS:")
                     .fontWeight(.semibold)
-                Text("Go to **System Settings > Privacy & Security > Extensions > Quick Look** and ensure **ANSI QuickLook** is checked.")
+                Text("Go to **System Settings > Privacy & Security > Extensions > Quick Look** and ensure **ANSITime QuickLook** is checked.")
                 Text("Or run in Terminal: `qlmanage -r && qlmanage -r cache`")
                     .font(.system(.caption, design: .monospaced))
                     .foregroundColor(.secondary)

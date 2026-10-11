@@ -29,7 +29,7 @@ public final class SparkleController: ObservableObject {
     public init() {}
 
     public func checkForUpdates() {
-        if let url = URL(string: "https://bino.io/ansi-quicklook") {
+        if let url = URL(string: "https://bino.io/ansitime") {
             NSWorkspace.shared.open(url)
         }
     }

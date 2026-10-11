@@ -1,14 +1,14 @@
 #!/usr/bin/env zsh
 set -euo pipefail
 
-# ANSI QuickLook Notarization Script
+# ANSITime Notarization Script
 # Signs with Developer ID Application certificate, creates a distributable DMG/ZIP,
 # submits to Apple Notary Service, and staples the notarization ticket.
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-APP="$REPO_ROOT/build/ANSI QuickLook.app"
+APP="$REPO_ROOT/build/ANSITime.app"
 
 if [[ ! -d "$APP" ]]; then
     echo "App bundle not found at $APP. Running build.zsh first..."
@@ -28,10 +28,10 @@ if [[ -z "$SIGNING_IDENTITY" ]]; then
 fi
 
 echo "==> Deep signing extension and host app with $SIGNING_IDENTITY..."
-codesign --force --options runtime --deep --sign "$SIGNING_IDENTITY" "$APP/Contents/PlugIns/ANSIQuickLookPreview.appex"
+codesign --force --options runtime --deep --sign "$SIGNING_IDENTITY" "$APP/Contents/PlugIns/ANSITimeQuickLook.appex"
 codesign --force --options runtime --deep --sign "$SIGNING_IDENTITY" "$APP"
 
-ARCHIVE_PATH="$REPO_ROOT/build/ANSIQuickLook-Release.zip"
+ARCHIVE_PATH="$REPO_ROOT/build/ANSITime-Release.zip"
 echo "==> Creating archive for submission: $ARCHIVE_PATH..."
 ditto -c -k --keepParent "$APP" "$ARCHIVE_PATH"
 

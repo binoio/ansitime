@@ -1,6 +1,6 @@
 # Third-Party Notices & Attribution
 
-ANSI QuickLook bundles and relies upon the following open-source projects and assets:
+ANSITime bundles and relies upon the following open-source projects and assets:
 
 ---
 

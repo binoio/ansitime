@@ -30,7 +30,7 @@ public final class AppModel: ObservableObject {
 }
 
 @main
-struct ANSIQuickLookApp: App {
+struct ANSITimeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var sparkle = SparkleController()
     @StateObject private var appModel = AppModel()
@@ -63,13 +63,13 @@ struct ANSIQuickLookApp: App {
             }
 
             CommandGroup(replacing: .help) {
-                Button("ANSI QuickLook on bino.io") {
+                Button("ANSITime on bino.io") {
                     if let url = URL(string: "https://bino.io") {
                         NSWorkspace.shared.open(url)
                     }
                 }
-                Button("GitHub Repository (binoio/ansi-quicklook)") {
-                    if let url = URL(string: "https://github.com/binoio/ansi-quicklook") {
+                Button("GitHub Repository (binoio/ansitime)") {
+                    if let url = URL(string: "https://github.com/binoio/ansitime") {
                         NSWorkspace.shared.open(url)
                     }
                 }
