@@ -74,13 +74,6 @@ public struct ContentView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Button(action: toggleSidebar) {
-                    Image(systemName: "sidebar.leading")
-                }
-                .help("Toggle Sidebar (⌃⌘S)")
-            }
-
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { appModel.showExportModal = true }) {
                     Label("Export & Share", systemImage: "square.and.arrow.up")
