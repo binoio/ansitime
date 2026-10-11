@@ -3,16 +3,18 @@ import SwiftUI
 import Sparkle
 
 public final class SparkleController: ObservableObject {
+    @Published public var canCheckForUpdates: Bool = false
     private var updaterController: SPUStandardUpdaterController?
 
     public init() {
-        // Only initialize if bundle identifier and Info.plist are present
         if Bundle.main.bundleIdentifier != nil {
-            self.updaterController = SPUStandardUpdaterController(
+            let controller = SPUStandardUpdaterController(
                 startingUpdater: true,
                 updaterDelegate: nil,
                 userDriverDelegate: nil
             )
+            self.updaterController = controller
+            self.canCheckForUpdates = controller.updater.canCheckForUpdates
         }
     }
 
@@ -20,8 +22,26 @@ public final class SparkleController: ObservableObject {
         updaterController?.checkForUpdates(nil)
     }
 
-    public var canCheckForUpdates: Bool {
-        updaterController?.updater.canCheckForUpdates ?? false
+    public var automaticallyChecksForUpdates: Bool {
+        get {
+            updaterController?.updater.automaticallyChecksForUpdates ??
+            UserDefaults.standard.bool(forKey: "SUEnableAutomaticChecks")
+        }
+        set {
+            updaterController?.updater.automaticallyChecksForUpdates = newValue
+            UserDefaults.standard.set(newValue, forKey: "SUEnableAutomaticChecks")
+        }
+    }
+
+    public var automaticallyDownloadsUpdates: Bool {
+        get {
+            updaterController?.updater.automaticallyDownloadsUpdates ??
+            UserDefaults.standard.bool(forKey: "SUAutomaticallyUpdate")
+        }
+        set {
+            updaterController?.updater.automaticallyDownloadsUpdates = newValue
+            UserDefaults.standard.set(newValue, forKey: "SUAutomaticallyUpdate")
+        }
     }
 }
 #else
@@ -35,5 +55,15 @@ public final class SparkleController: ObservableObject {
     }
 
     public var canCheckForUpdates: Bool { true }
+
+    public var automaticallyChecksForUpdates: Bool {
+        get { UserDefaults.standard.bool(forKey: "SUEnableAutomaticChecks") }
+        set { UserDefaults.standard.set(newValue, forKey: "SUEnableAutomaticChecks") }
+    }
+
+    public var automaticallyDownloadsUpdates: Bool {
+        get { UserDefaults.standard.bool(forKey: "SUAutomaticallyUpdate") }
+        set { UserDefaults.standard.set(newValue, forKey: "SUAutomaticallyUpdate") }
+    }
 }
 #endif

@@ -1,5 +1,7 @@
 import XCTest
+#if canImport(WebKit)
 import WebKit
+#endif
 @testable import AnsiCore
 
 final class AnsiPreviewTemplateTests: XCTestCase {
@@ -17,6 +19,30 @@ final class AnsiPreviewTemplateTests: XCTestCase {
         XCTAssertTrue(html.contains("FONT_9x16"))
         XCTAssertTrue(html.contains("FONT_8x16"))
     }
+
+    func testRenderHTMLSupports8x16Font() {
+        let raw = Data("\u{1b}[33mYellow ANSI\u{1b}[0m".utf8)
+        let doc = AnsiDocument(data: raw)
+
+        let html = AnsiPreviewTemplate.renderHTML(document: doc, rows: 50, fontChoice: .cp437_8x16, showHud: false)
+
+        XCTAssertTrue(html.contains("options.ScreenRows = 50;"))
+        XCTAssertTrue(html.contains("options.ScreenColumns = 80;"))
+        XCTAssertTrue(html.contains("var TARGET_FONT_NAME = 'CP437_8x16';"))
+        XCTAssertTrue(html.contains("var TARGET_WIDTH = 8;"))
+    }
+
+    func testRenderHTMLAutoRowsDefaultsToDocRecommendation() {
+        let raw = Data("\u{1b}[36mCyan ANSI\u{1b}[0m".utf8)
+        let doc = AnsiDocument(data: raw)
+
+        let html = AnsiPreviewTemplate.renderHTML(document: doc, rows: nil, fontChoice: .cp437_9x16, showHud: false)
+
+        XCTAssertTrue(html.contains("options.ScreenRows = \(doc.recommendedRows);"))
+        XCTAssertTrue(html.contains("var TARGET_FONT_NAME = 'CP437_9x16';"))
+        XCTAssertTrue(html.contains("var TARGET_WIDTH = 9;"))
+    }
+#if canImport(WebKit)
     func testWKWebViewRendering() throws {
         let url = URL(fileURLWithPath: "logon-scene.ans")
         let doc = try AnsiDocument(contentsOf: url)
@@ -85,4 +111,5 @@ final class AnsiPreviewTemplateTests: XCTestCase {
 
         wait(for: [exp], timeout: 10.0)
     }
+#endif
 }
