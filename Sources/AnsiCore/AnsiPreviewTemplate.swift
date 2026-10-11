@@ -136,6 +136,14 @@ public struct AnsiPreviewTemplate: Sendable {
             </script>
 
             <script>
+                // Disable fTelnet dynamic font resizing on window resize to prevent canvas buffer tearing
+                if (typeof Crt !== 'undefined' && Crt.prototype) {
+                    Crt.prototype.AllowDynamicFontResize = false;
+                    Crt.prototype.OnResize = function() {
+                        // Keep fixed font cell dimensions across window and sidebar resizes
+                    };
+                }
+
                 var FONT_9x16 = 'data:image/png;base64,\(font9b64)';
                 var FONT_8x16 = 'data:image/png;base64,\(font8b64)';
 
@@ -155,6 +163,9 @@ public struct AnsiPreviewTemplate: Sendable {
                 options.Font = '\(fontChoice.fontName)';
 
                 window.client = new fTelnetClient('fTelnetContainer', options);
+                if (window.client && window.client._Crt) {
+                    window.client._Crt.AllowDynamicFontResize = false;
+                }
             </script>
         </body>
         </html>

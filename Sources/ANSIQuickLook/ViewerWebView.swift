@@ -11,6 +11,14 @@ public struct ViewerWebView: NSViewRepresentable {
         self._webViewRef = webViewRef
     }
 
+    public class Coordinator {
+        var lastHTML: String?
+    }
+
+    public func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     public func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
@@ -20,12 +28,15 @@ public struct ViewerWebView: NSViewRepresentable {
         DispatchQueue.main.async {
             self.webViewRef = webView
         }
+        context.coordinator.lastHTML = htmlString
         webView.loadHTMLString(htmlString, baseURL: nil)
         return webView
     }
 
     public func updateNSView(_ nsView: WKWebView, context: Context) {
-        if nsView.isLoading == false {
+        // Prevent redundant reloads during SwiftUI layout passes (e.g. sidebar toggle or resize animation)
+        if context.coordinator.lastHTML != htmlString {
+            context.coordinator.lastHTML = htmlString
             nsView.loadHTMLString(htmlString, baseURL: nil)
         }
     }
