@@ -35,7 +35,7 @@ rm -rf "$TARGET_APP"
 cp -R "$BUILT_APP" "$TARGET_APP"
 
 echo "==> [4/4] Applying ad-hoc codesign to extension and host..."
-codesign --force --deep --sign - "$TARGET_APP/Contents/PlugIns/ANSIQuickLookPreview.appex"
-codesign --force --deep --sign - "$TARGET_APP"
+codesign --force --deep --entitlements Sources/ANSIQuickLookPreview/ANSIQuickLookPreview.entitlements --sign - "$TARGET_APP/Contents/PlugIns/ANSIQuickLookPreview.appex"
+codesign --force --deep --entitlements Sources/ANSIQuickLook/ANSIQuickLook.entitlements --sign - "$TARGET_APP"
 
 echo "==> Build complete: $TARGET_APP"
