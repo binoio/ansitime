@@ -14,9 +14,11 @@ public struct ContentView: View {
     @State private var webViewRef: WKWebView?
     @State private var isTargetedForDrop = false
     @ObservedObject var sparkle: SparkleController
+    @ObservedObject var appModel: AppModel
 
-    public init(sparkle: SparkleController) {
+    public init(sparkle: SparkleController, appModel: AppModel) {
         self.sparkle = sparkle
+        self.appModel = appModel
     }
 
     public var body: some View {
@@ -130,8 +132,21 @@ public struct ContentView: View {
                 loadFile(url: url)
             }
         }
+        .onChange(of: appModel.requestedURL) { newURL in
+            if let url = newURL {
+                scanDirectory(containing: url)
+                selectedURL = url
+                loadFile(url: url)
+            }
+        }
         .onAppear {
-            scanDirectoryAndLoadInitial()
+            if let url = appModel.requestedURL {
+                scanDirectory(containing: url)
+                selectedURL = url
+                loadFile(url: url)
+            } else {
+                scanDirectoryAndLoadInitial()
+            }
         }
     }
 

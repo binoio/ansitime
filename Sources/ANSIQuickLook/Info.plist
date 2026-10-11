@@ -34,7 +34,13 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
-			<string>Alternate</string>
+			<string>Default</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ans</string>
+				<string>asc</string>
+				<string>diz</string>
+			</array>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>public.ansi-text</string>
