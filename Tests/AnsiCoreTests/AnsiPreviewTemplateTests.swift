@@ -1,4 +1,5 @@
 import XCTest
+import WebKit
 @testable import AnsiCore
 
 final class AnsiPreviewTemplateTests: XCTestCase {
@@ -15,5 +16,73 @@ final class AnsiPreviewTemplateTests: XCTestCase {
         XCTAssertTrue(html.contains("options.SplashScreen = '\(doc.ftelnetPayloadBase64)';"))
         XCTAssertTrue(html.contains("FONT_9x16"))
         XCTAssertTrue(html.contains("FONT_8x16"))
+    }
+    func testWKWebViewRendering() throws {
+        let url = URL(fileURLWithPath: "logon-scene.ans")
+        let doc = try AnsiDocument(contentsOf: url)
+        let html = AnsiPreviewTemplate.renderHTML(document: doc, rows: nil, fontChoice: .cp437_9x16, showHud: false)
+
+        let exp = expectation(description: "WKWebView loaded")
+        let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 800, height: 600))
+        webView.loadHTMLString(html, baseURL: nil)
+
+        class Helper: NSObject, WKNavigationDelegate {
+            var onFinish: (() -> Void)?
+            func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+                onFinish?()
+            }
+        }
+        let helper = Helper()
+        helper.onFinish = {
+            webView.evaluateJavaScript("""
+                (function() {
+                    var c = window.client;
+                    var crt = c ? c._Crt : null;
+                    return JSON.stringify({
+                        hasClient: !!c,
+                        hasCrt: !!crt,
+                        allowDynamic: crt ? crt._AllowDynamicFontResize : null,
+                        fontName: crt ? crt._Font.Name : null,
+                        fontSize: crt ? [crt._Font.Size.x, crt._Font.Size.y] : null,
+                        canvasSize: crt ? [crt._Canvas.width, crt._Canvas.height] : null
+                    });
+                })()
+            """) { res, err in
+                print("--- INITIAL STATE ---:", res as Any, "ERR:", err as Any)
+
+                // Now simulate window resize down to narrow frame
+                webView.evaluateJavaScript("""
+                    (function() {
+                        window.innerWidth = 400;
+                        window.innerHeight = 300;
+                        window.dispatchEvent(new Event('resize'));
+                        var c = window.client;
+                        var crt = c ? c._Crt : null;
+                        var sb = document.querySelector('.fTelnetStatusBar');
+                        return JSON.stringify({
+                            allowDynamic: crt ? crt._AllowDynamicFontResize : null,
+                            fontName: crt ? crt._Font.Name : null,
+                            fontSize: crt ? [crt._Font.Size.x, crt._Font.Size.y] : null,
+                            canvasSize: crt ? [crt._Canvas.width, crt._Canvas.height] : null,
+                            statusBarVisible: sb ? (getComputedStyle(sb).display !== 'none') : false
+                        });
+                    })()
+                """) { res2, err2 in
+                    if let jsonStr = res2 as? String,
+                       let data = jsonStr.data(using: .utf8),
+                       let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                        let fontSize = obj["fontSize"] as? [Int]
+                        XCTAssertEqual(fontSize, [9, 16])
+                        XCTAssertEqual(obj["statusBarVisible"] as? Bool, false)
+                    } else {
+                        XCTFail("Failed to parse resize response")
+                    }
+                    exp.fulfill()
+                }
+            }
+        }
+        webView.navigationDelegate = helper
+
+        wait(for: [exp], timeout: 10.0)
     }
 }

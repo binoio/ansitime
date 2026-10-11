@@ -88,6 +88,19 @@ public struct AnsiPreviewTemplate: Sendable {
                     border-radius: 4px;
                     background-color: #000000;
                     image-rendering: pixelated;
+                    overflow: hidden;
+                }
+
+                /* Hide all client chrome: status bar, connect buttons, scrollback toolbar */
+                .fTelnetStatusBar,
+                .fTelnetButtons,
+                .fTelnetFocusWarning,
+                .fTelnetScrollback,
+                .fTelnetInitMessage {
+                    display: none !important;
+                    visibility: hidden !important;
+                    height: 0 !important;
+                    overflow: hidden !important;
                 }
 
                 #sauce-hud {
@@ -136,23 +149,35 @@ public struct AnsiPreviewTemplate: Sendable {
             </script>
 
             <script>
-                // Disable fTelnet dynamic font resizing on window resize to prevent canvas buffer tearing
-                if (typeof Crt !== 'undefined' && Crt.prototype) {
-                    Crt.prototype.AllowDynamicFontResize = false;
-                    Crt.prototype.OnResize = function() {
-                        // Keep fixed font cell dimensions across window and sidebar resizes
-                    };
-                }
+                var TARGET_WIDTH = \(fontChoice.width);
+                var TARGET_HEIGHT = \(fontChoice.height);
+                var TARGET_FONT_NAME = '\(fontChoice.fontName)';
 
                 var FONT_9x16 = 'data:image/png;base64,\(font9b64)';
                 var FONT_8x16 = 'data:image/png;base64,\(font8b64)';
 
+                // Bulletproof font resolution: lock dimensions to target width/height
                 if (typeof CrtFonts !== 'undefined') {
+                    CrtFonts.GetBestFit = function(font, maxWidth, maxHeight) {
+                        return new Point(TARGET_WIDTH, TARGET_HEIGHT);
+                    };
+
                     CrtFonts.GetLocalUrl = function(font, width, height) {
-                        if (width === 8) {
+                        if (TARGET_WIDTH === 8 || width === 8) {
                             return FONT_8x16;
                         }
                         return FONT_9x16;
+                    };
+                }
+
+                // Override Crt prototype to lock font size and eliminate dynamic downscaling
+                if (typeof Crt !== 'undefined' && Crt.prototype) {
+                    Crt.prototype.AllowDynamicFontResize = false;
+                    Crt.prototype.OnResize = function() {
+                        // Prevent font downscaling or canvas resizing on window / sidebar resize
+                    };
+                    Crt.prototype.SetFont = function(font) {
+                        return this._Font.Load(TARGET_FONT_NAME, TARGET_WIDTH, TARGET_HEIGHT);
                     };
                 }
 
@@ -160,11 +185,20 @@ public struct AnsiPreviewTemplate: Sendable {
                 options.SplashScreen = '\(payload)';
                 options.ScreenRows = \(activeRows);
                 options.ScreenColumns = \(activeCols);
-                options.Font = '\(fontChoice.fontName)';
+                options.Font = TARGET_FONT_NAME;
 
                 window.client = new fTelnetClient('fTelnetContainer', options);
-                if (window.client && window.client._Crt) {
-                    window.client._Crt.AllowDynamicFontResize = false;
+                if (window.client) {
+                    if (window.client._Crt) {
+                        window.client._Crt.AllowDynamicFontResize = false;
+                        window.client._Crt.OnResize = function() {};
+                    }
+                    if (window.client._StatusBar) {
+                        window.client._StatusBar.style.display = 'none';
+                        if (window.client._StatusBar.parentNode) {
+                            window.client._StatusBar.parentNode.removeChild(window.client._StatusBar);
+                        }
+                    }
                 }
             </script>
         </body>
