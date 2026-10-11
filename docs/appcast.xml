@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>ANSITime Changelog</title>
+    <link>https://bino.io/appcasts/ansitime.xml</link>
+    <description>Most recent updates for ANSITime.</description>
+    <language>en</language>
+    <item>
+      <title>ANSITime 1.0.0</title>
+      <pubDate>Sun, 11 Oct 2026 10:00:00 -0400</pubDate>
+      <sparkle:releaseNotesLink>https://github.com/binoio/ansitime/releases/tag/v1.0.0</sparkle:releaseNotesLink>
+      <enclosure
+        url="https://github.com/binoio/ansitime/releases/download/v1.0.0/ANSITime-1.0.0.zip"
+        sparkle:version="1"
+        sparkle:shortVersionString="1.0.0"
+        type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>

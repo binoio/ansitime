@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANSITime - BBS & ANSI Art Viewer for macOS</title>
+    <meta name="description" content="Native macOS standalone viewer and Finder Quick Look plugin for ANSI, ASCII, and BBS art with authentic fTelnet CP437 rendering.">
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #1d1d1f;
+            --secondary: #86868b;
+            --accent: #3da83d;
+            --terminal: #50b450;
+            --card-bg: #f5f5f7;
+            --border: #d2d2d7;
+            --code-bg: #f5f5f7;
+            --radius: 12px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0c0a08;
+                --fg: #f5f5f7;
+                --secondary: #a0a0a5;
+                --accent: #50b450;
+                --terminal: #79c979;
+                --card-bg: #181512;
+                --border: #2e261e;
+                --code-bg: #14110e;
+            }
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            padding: 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--secondary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.15s ease;
+        }
+
+        .back-link:hover {
+            color: var(--fg);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: block;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 0 60px;
+        }
+
+        .hero-icon {
+            width: 128px;
+            height: 128px;
+            border-radius: 28px;
+            display: block;
+            margin: 0 auto 24px;
+            box-shadow: 0 18px 40px -18px rgba(80, 180, 80, 0.6);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin: 0 0 16px;
+            letter-spacing: -0.015em;
+            background: linear-gradient(135deg, var(--accent) 0%, #ffd27a 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.35rem;
+            color: var(--secondary);
+            max-width: 620px;
+            margin: 0 auto 36px;
+        }
+
+        .cta-container {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--accent);
+            color: #0c0a08;
+            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .cta:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .cta-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--card-bg);
+            color: var(--fg);
+            border: 1px solid var(--border);
+            padding: 12px 28px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 60px 0;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+        }
+
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 1.25rem;
+            color: var(--terminal);
+        }
+
+        .card p {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--secondary);
+            font-size: 0.85rem;
+            padding: 40px 0 60px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="https://bino.io" class="back-link">&larr; bino.io</a>
+            <a href="https://github.com/binoio/ansitime" class="back-link">GitHub</a>
+        </nav>
+
+        <header>
+            <img src="icon.png" alt="ANSITime Icon" class="hero-icon">
+            <h1>ANSITime</h1>
+            <p class="subtitle">Native macOS standalone viewer and Finder Quick Look plugin for authentic BBS &amp; ANSI art.</p>
+            <div class="cta-container">
+                <a href="https://github.com/binoio/ansitime/releases/latest" class="cta">Download for macOS</a>
+                <a href="https://github.com/binoio/ansitime" class="cta-secondary">View on GitHub</a>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Finder Quick Look</h3>
+                <p>Highlight any <code>.ans</code>, <code>.asc</code>, or <code>.diz</code> file in Finder and tap the spacebar for instant, high-fidelity BBS preview.</p>
+            </div>
+            <div class="card">
+                <h3>Authentic CP437 Engine</h3>
+                <p>Built with fTelnet's IBM PC Code Page 437 bitmap font engine and authentic VGA 16-color palette without running local Python HTTP servers.</p>
+            </div>
+            <div class="card">
+                <h3>SAUCE Metadata Inspector</h3>
+                <p>Auto-detects SAUCE records: title, artist, group, date, and dimensions. Automatically formats screen height for tall art.</p>
+            </div>
+            <div class="card">
+                <h3>Export &amp; Share</h3>
+                <p>Export pixel-perfect rendered art directly to high-resolution PNG images, copy plain text, or share via macOS share sheets.</p>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 Michael Bino &bull; <a href="https://bino.io">bino.io</a> &bull; MIT License
+        </footer>
+    </div>
+</body>
+</html>
