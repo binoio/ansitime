@@ -5,7 +5,12 @@ public struct AnsiPreviewTemplate: Sendable {
         case cp437_9x16 = "CP437 (9x16)"
         case cp437_8x16 = "CP437 (8x16)"
 
-        public var fontName: String { "CP437" }
+        public var fontName: String {
+            switch self {
+            case .cp437_9x16: return "CP437_9x16"
+            case .cp437_8x16: return "CP437_8x16"
+            }
+        }
         public var width: Int { self == .cp437_9x16 ? 9 : 8 }
         public var height: Int { 16 }
     }
@@ -72,23 +77,23 @@ public struct AnsiPreviewTemplate: Sendable {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    padding: 20px;
+                    margin: auto;
+                    padding: 24px;
                     box-sizing: border-box;
                 }
 
                 #fTelnetContainer {
                     display: inline-block;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-                    border: 1px solid #2a221b;
+                    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9), 0 0 0 1px #2a221b;
                     border-radius: 4px;
                     background-color: #000000;
                     image-rendering: pixelated;
                 }
 
                 #sauce-hud {
-                    margin-bottom: 12px;
-                    padding: 6px 14px;
-                    background: rgba(30, 25, 20, 0.85);
+                    margin-bottom: 14px;
+                    padding: 6px 16px;
+                    background: rgba(30, 25, 20, 0.9);
                     border: 1px solid #4a3c2f;
                     border-radius: 16px;
                     display: flex;
@@ -131,7 +136,6 @@ public struct AnsiPreviewTemplate: Sendable {
             </script>
 
             <script>
-                // Intercept font requests to load zero-latency base64 inlined CP437 bitmaps
                 var FONT_9x16 = 'data:image/png;base64,\(font9b64)';
                 var FONT_8x16 = 'data:image/png;base64,\(font8b64)';
 
@@ -149,23 +153,8 @@ public struct AnsiPreviewTemplate: Sendable {
                 options.ScreenRows = \(activeRows);
                 options.ScreenColumns = \(activeCols);
                 options.Font = '\(fontChoice.fontName)';
-                options.FontSize = '\(fontChoice.width)x\(fontChoice.height)';
 
                 window.client = new fTelnetClient('fTelnetContainer', options);
-
-                function setScreenRows(rows) {
-                    var c = document.getElementById('fTelnetContainer');
-                    c.innerHTML = '';
-                    options.ScreenRows = rows;
-                    window.client = new fTelnetClient('fTelnetContainer', options);
-                }
-
-                function setFont(width, height) {
-                    var c = document.getElementById('fTelnetContainer');
-                    c.innerHTML = '';
-                    options.FontSize = width + 'x' + height;
-                    window.client = new fTelnetClient('fTelnetContainer', options);
-                }
             </script>
         </body>
         </html>

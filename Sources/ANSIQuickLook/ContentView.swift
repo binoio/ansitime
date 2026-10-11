@@ -4,8 +4,9 @@ import UniformTypeIdentifiers
 import AnsiCore
 
 public struct ContentView: View {
-    @State private var currentDocument: AnsiDocument?
-    @State private var currentURL: URL?
+    @State private var nearbyFiles: [URL] = []
+    @State private var selectedURL: URL? = nil
+    @State private var currentDocument: AnsiDocument? = nil
     @State private var selectedRows: Int? = nil // nil = Auto
     @State private var selectedFont: AnsiPreviewTemplate.FontChoice = .cp437_9x16
     @State private var showInspector = false
@@ -20,9 +21,35 @@ public struct ContentView: View {
 
     public var body: some View {
         NavigationSplitView {
-            // Main content area
+            // SIDEBAR: List of ANSI files in directory
+            List(nearbyFiles, id: \.self, selection: $selectedURL) { fileURL in
+                HStack(spacing: 10) {
+                    Image(systemName: "terminal")
+                        .foregroundColor(.green)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(fileURL.lastPathComponent)
+                            .font(.system(.body, design: .monospaced))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+                .tag(fileURL)
+            }
+            .navigationTitle("Files")
+            .listStyle(.sidebar)
+            .toolbar {
+                ToolbarItem(placement: .automatic) {
+                    Button(action: openFile) {
+                        Label("Open...", systemImage: "folder.badge.plus")
+                    }
+                    .help("Open ANSI file or folder")
+                }
+            }
+        } detail: {
+            // DETAIL: Full size, centered ANSI canvas
             ZStack {
-                Color(NSColor.black)
+                Color(red: 0.05, green: 0.04, blue: 0.03)
                     .ignoresSafeArea()
 
                 if let doc = currentDocument {
@@ -35,6 +62,7 @@ public struct ContentView: View {
                         ),
                         webViewRef: $webViewRef
                     )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     emptyStateView
                 }
@@ -42,41 +70,32 @@ public struct ContentView: View {
                 if isTargetedForDrop {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(Color.green, lineWidth: 3)
-                        .background(Color.green.opacity(0.1))
-                        .padding(16)
+                        .background(Color.green.opacity(0.15))
+                        .padding(24)
                 }
             }
-            .onDrop(of: [.fileURL], isTargeted: $isTargetedForDrop) { providers in
-                handleDrop(providers: providers)
-            }
-        } detail: {
-            if showInspector {
+            .navigationTitle(selectedURL?.lastPathComponent ?? "ANSI QuickLook")
+            .inspector(isPresented: $showInspector) {
                 SauceInspectorView(sauce: currentDocument?.sauce)
+                    .inspectorColumnWidth(min: 240, ideal: 280, max: 320)
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .navigation) {
-                Button(action: openFile) {
-                    Label("Open", systemImage: "folder")
-                }
-                .help("Open ANSI Art file (.ans, .asc)")
-            }
-
             ToolbarItemGroup(placement: .principal) {
                 Picker("Rows", selection: $selectedRows) {
-                    Text("Auto").tag(Int?.none)
+                    Text("Auto (\(autoRowCountLabel))").tag(Int?.none)
                     Text("25 Rows").tag(Int?.some(25))
                     Text("50 Rows").tag(Int?.some(50))
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 220)
+                .frame(width: 240)
 
                 Picker("Font", selection: $selectedFont) {
                     Text("CP437 9x16").tag(AnsiPreviewTemplate.FontChoice.cp437_9x16)
                     Text("CP437 8x16").tag(AnsiPreviewTemplate.FontChoice.cp437_8x16)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 220)
+                .frame(width: 200)
             }
 
             ToolbarItemGroup(placement: .primaryAction) {
@@ -103,9 +122,22 @@ public struct ContentView: View {
         .sheet(isPresented: $showQuickLookStatus) {
             quickLookStatusSheet
         }
-        .onAppear {
-            loadDefaultSampleIfAvailable()
+        .onDrop(of: [.fileURL], isTargeted: $isTargetedForDrop) { providers in
+            handleDrop(providers: providers)
         }
+        .onChange(of: selectedURL) { newURL in
+            if let url = newURL {
+                loadFile(url: url)
+            }
+        }
+        .onAppear {
+            scanDirectoryAndLoadInitial()
+        }
+    }
+
+    private var autoRowCountLabel: String {
+        guard let doc = currentDocument else { return "25" }
+        return "\(doc.recommendedRows)"
     }
 
     private var emptyStateView: some View {
@@ -119,7 +151,7 @@ public struct ContentView: View {
                 .fontWeight(.bold)
                 .foregroundColor(.white)
 
-            Text("Drag & drop any .ans or .asc file here,\nor click Open to preview BBS art.")
+            Text("Drag & drop any .ans or .asc file here,\nor select a file from the sidebar.")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.gray)
 
@@ -181,7 +213,35 @@ public struct ContentView: View {
         panel.canChooseDirectories = false
 
         if panel.runModal() == .OK, let url = panel.url {
+            scanDirectory(containing: url)
+            selectedURL = url
             loadFile(url: url)
+        }
+    }
+
+    private func scanDirectoryAndLoadInitial() {
+        let currentDir = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        scanDirectory(containing: currentDir)
+
+        if let first = nearbyFiles.first {
+            selectedURL = first
+            loadFile(url: first)
+        }
+    }
+
+    private func scanDirectory(containing fileOrDir: URL) {
+        let dir = fileOrDir.hasDirectoryPath ? fileOrDir : fileOrDir.deletingLastPathComponent()
+        let fm = FileManager.default
+        guard let items = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else {
+            return
+        }
+
+        let supported = ["ans", "asc", "diz"]
+        let ansFiles = items.filter { supported.contains($0.pathExtension.lowercased()) }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+
+        if !ansFiles.isEmpty {
+            self.nearbyFiles = ansFiles
         }
     }
 
@@ -189,7 +249,6 @@ public struct ContentView: View {
         do {
             let doc = try AnsiDocument(contentsOf: url)
             self.currentDocument = doc
-            self.currentURL = url
             self.selectedRows = nil // Reset to Auto
         } catch {
             print("Error loading ANSI file: \(error)")
@@ -199,12 +258,17 @@ public struct ContentView: View {
     private func handleDrop(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first else { return false }
         provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-            if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
-                DispatchQueue.main.async {
-                    self.loadFile(url: url)
-                }
+            var targetURL: URL? = nil
+            if let data = item as? Data {
+                targetURL = URL(dataRepresentation: data, relativeTo: nil)
             } else if let url = item as? URL {
+                targetURL = url
+            }
+
+            if let url = targetURL {
                 DispatchQueue.main.async {
+                    self.scanDirectory(containing: url)
+                    self.selectedURL = url
                     self.loadFile(url: url)
                 }
             }
@@ -216,7 +280,7 @@ public struct ContentView: View {
         guard let webView = webViewRef else { return }
         let savePanel = NSSavePanel()
         savePanel.allowedContentTypes = [.png]
-        let baseName = currentURL?.deletingPathExtension().lastPathComponent ?? "ansi-render"
+        let baseName = selectedURL?.deletingPathExtension().lastPathComponent ?? "ansi-render"
         savePanel.nameFieldStringValue = "\(baseName).png"
 
         if savePanel.runModal() == .OK, let targetURL = savePanel.url {
@@ -237,14 +301,6 @@ public struct ContentView: View {
         if let text = String(data: doc.sanitizedAnsiData, encoding: .isoLatin1) {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
-        }
-    }
-
-    private func loadDefaultSampleIfAvailable() {
-        // Automatically load bean-board-wide.ans or splash.ans if present in current directory
-        let wideUrl = URL(fileURLWithPath: "bean-board-wide.ans")
-        if FileManager.default.fileExists(atPath: wideUrl.path) {
-            loadFile(url: wideUrl)
         }
     }
 }

@@ -39,9 +39,9 @@ public struct AnsiDocument: Equatable, Sendable {
             self.estimatedRows = est
 
             if rows > 0 {
-                self.recommendedRows = rows
+                self.recommendedRows = rows > 25 ? max(rows, 50) : 25
             } else if est > 25 {
-                self.recommendedRows = est > 45 ? 50 : max(est, 25)
+                self.recommendedRows = max(est, 50)
             } else {
                 self.recommendedRows = 25
             }

@@ -44,4 +44,30 @@ final class AnsiDocumentTests: XCTestCase {
         XCTAssertEqual(doc.recommendedCols, 80)
         XCTAssertEqual(doc.recommendedRows, 25)
     }
+
+    func testTallAnsiRowMapping() {
+        var raw = Data("Tall ANSI\r\n".utf8)
+        let bodyLength = raw.count
+        raw.append(0x1A)
+
+        var sauce = Data("SAUCE00".utf8)
+        sauce.append(Data("Tall Artwork                       ".utf8))
+        sauce.append(Data("Artist              ".utf8))
+        sauce.append(Data("Group               ".utf8))
+        sauce.append(Data("20261011".utf8))
+        sauce.append(contentsOf: [UInt8(bodyLength), 0, 0, 0])
+        sauce.append(1) // DataType
+        sauce.append(1) // FileType
+        sauce.append(contentsOf: [80, 0]) // 80 cols
+        sauce.append(contentsOf: [30, 0]) // 30 rows
+        sauce.append(contentsOf: [0, 0])
+        sauce.append(contentsOf: [0, 0])
+        sauce.append(0)
+        sauce.append(0)
+        sauce.append(Data(repeating: 0, count: 22))
+        raw.append(sauce)
+
+        let doc = AnsiDocument(data: raw)
+        XCTAssertEqual(doc.recommendedRows, 50)
+    }
 }
