@@ -74,6 +74,13 @@ public struct ContentView: View {
             }
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Button(action: toggleSidebar) {
+                    Image(systemName: "sidebar.leading")
+                }
+                .help("Toggle Sidebar (⌃⌘S)")
+            }
+
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { appModel.showExportModal = true }) {
                     Label("Export & Share", systemImage: "square.and.arrow.up")
@@ -119,6 +126,15 @@ public struct ContentView: View {
         .onChange(of: defaultFont) { newFont in
             appModel.selectedFont = (newFont == "8x16") ? .cp437_8x16 : .cp437_9x16
         }
+        .onChange(of: appModel.triggerToggleSidebar) { trigger in
+            if trigger {
+                appModel.triggerToggleSidebar = false
+                toggleSidebar()
+            }
+        }
+        .onChange(of: columnVisibility) { newVis in
+            appModel.isSidebarVisible = (newVis != .detailOnly)
+        }
         .onAppear {
             if let url = appModel.requestedURL {
                 scanDirectory(containing: url)
@@ -127,6 +143,12 @@ public struct ContentView: View {
             } else {
                 scanDirectoryAndLoadInitial()
             }
+        }
+    }
+
+    private func toggleSidebar() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            columnVisibility = (columnVisibility == .detailOnly) ? .all : .detailOnly
         }
     }
 

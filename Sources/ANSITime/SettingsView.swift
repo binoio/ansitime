@@ -153,15 +153,8 @@ public struct SettingsView: View {
 
             Section {
                 HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Appcast Feed:")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("https://bino.io/ansitime/appcast.xml")
-                            .font(.system(.caption, design: .monospaced))
-                    }
                     Spacer()
-                    Button("Check for Updates Now") {
+                    Button("Check for Updates") {
                         sparkle.checkForUpdates()
                     }
                     .buttonStyle(.borderedProminent)

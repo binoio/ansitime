@@ -28,6 +28,8 @@ public final class AppModel: ObservableObject {
     @Published public var showInspector: Bool = false
     @Published public var showExportModal: Bool = false
     @Published public var autoRowsSummary: String = "25"
+    @Published public var isSidebarVisible: Bool = false
+    @Published public var triggerToggleSidebar: Bool = false
 
     public init() {
         let storedFont = UserDefaults.standard.string(forKey: "defaultFont") ?? "9x16"
@@ -119,6 +121,13 @@ struct ANSITimeApp: App {
                     appModel.showInspector.toggle()
                 }
                 .keyboardShortcut("i", modifiers: [.command, .option])
+
+                Divider()
+
+                Button(appModel.isSidebarVisible ? "Hide Sidebar" : "Show Sidebar") {
+                    appModel.triggerToggleSidebar = true
+                }
+                .keyboardShortcut("s", modifiers: [.control, .command])
             }
 
             // Application Menu
