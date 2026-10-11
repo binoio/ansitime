@@ -1,0 +1,3 @@
+[tools]
+xcodegen = "latest"
+swift = "latest"

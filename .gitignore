@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode / SPM
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+!project.yml
+.build/
+.swiftpm/
+
+# Packaging
+*.app
+*.dmg
+*.zip
+
+# Temporary & Python artifacts
+__pycache__/
+*.pyc
+*.swp
+*.bak
+*~

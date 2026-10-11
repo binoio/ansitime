@@ -1,0 +1,66 @@
+name: ANSIQuickLook
+options:
+  bundleIdPrefix: io.bino
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
+
+targets:
+  AnsiCore:
+    type: library.static
+    platform: macOS
+    sources:
+      - path: Sources/AnsiCore
+    settings:
+      PRODUCT_NAME: AnsiCore
+      SWIFT_VERSION: "5.9"
+      SKIP_INSTALL: "YES"
+
+  ANSIQuickLookPreview:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: Sources/ANSIQuickLookPreview
+    dependencies:
+      - target: AnsiCore
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: io.bino.ansi-quicklook.preview
+      INFOPLIST_FILE: Sources/ANSIQuickLookPreview/Info.plist
+      GENERATE_INFOPLIST_FILE: "NO"
+      SWIFT_VERSION: "5.9"
+      ENABLE_HARDENED_RUNTIME: "YES"
+      CODE_SIGN_STYLE: Automatic
+      SKIP_INSTALL: "YES"
+
+  ANSIQuickLook:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/ANSIQuickLook
+    dependencies:
+      - target: AnsiCore
+      - target: ANSIQuickLookPreview
+      - package: Sparkle
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: io.bino.ansi-quicklook
+      INFOPLIST_FILE: Sources/ANSIQuickLook/Info.plist
+      GENERATE_INFOPLIST_FILE: "NO"
+      SWIFT_VERSION: "5.9"
+      ENABLE_HARDENED_RUNTIME: "YES"
+      CODE_SIGN_STYLE: Automatic
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+  AnsiCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/AnsiCoreTests
+    dependencies:
+      - target: AnsiCore
+    settings:
+      SWIFT_VERSION: "5.9"
