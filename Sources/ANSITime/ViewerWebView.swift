@@ -4,10 +4,16 @@ import AnsiCore
 
 public struct ViewerWebView: NSViewRepresentable {
     public let htmlString: String
+    public let zoomLevel: Double
     @Binding public var webViewRef: WKWebView?
 
-    public init(htmlString: String, webViewRef: Binding<WKWebView?> = .constant(nil)) {
+    public init(
+        htmlString: String,
+        zoomLevel: Double = 1.0,
+        webViewRef: Binding<WKWebView?> = .constant(nil)
+    ) {
         self.htmlString = htmlString
+        self.zoomLevel = zoomLevel
         self._webViewRef = webViewRef
     }
 
@@ -25,6 +31,8 @@ public struct ViewerWebView: NSViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.setValue(false, forKey: "drawsBackground") // Transparent background
+        webView.allowsMagnification = true
+        webView.pageZoom = CGFloat(zoomLevel)
         DispatchQueue.main.async {
             self.webViewRef = webView
         }
@@ -38,6 +46,12 @@ public struct ViewerWebView: NSViewRepresentable {
         if context.coordinator.lastHTML != htmlString {
             context.coordinator.lastHTML = htmlString
             nsView.loadHTMLString(htmlString, baseURL: nil)
+        }
+        if abs(Double(nsView.pageZoom) - zoomLevel) > 0.001 {
+            nsView.pageZoom = CGFloat(zoomLevel)
+        }
+        if zoomLevel == 1.0 && nsView.magnification != 1.0 {
+            nsView.setMagnification(1.0, centeredAt: .zero)
         }
     }
 }

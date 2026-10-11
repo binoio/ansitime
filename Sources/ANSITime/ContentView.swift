@@ -53,12 +53,38 @@ public struct ContentView: View {
                             fontChoice: appModel.selectedFont,
                             showHud: false
                         ),
+                        zoomLevel: appModel.zoomLevel,
                         webViewRef: $webViewRef
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contextMenu {
+                        Button("Zoom In") { appModel.zoomIn() }
+                        Button("Zoom Out") { appModel.zoomOut() }
+                        Button("Actual Size (100%)") { appModel.resetZoom() }
+                        Divider()
+                        Menu("Zoom Level") {
+                            ForEach(AppModel.zoomPresets, id: \.self) { level in
+                                Button(abs(appModel.zoomLevel - level) < 0.01 ? "✓ \(ZoomScale.formattedPercentage(level))" : "  \(ZoomScale.formattedPercentage(level))") {
+                                    appModel.setZoom(level)
+                                }
+                            }
+                        }
+                        Divider()
+                        Button("Export & Share…") { appModel.showExportModal = true }
+                        Button(appModel.showInspector ? "Hide SAUCE Inspector" : "Show SAUCE Inspector") {
+                            appModel.showInspector.toggle()
+                        }
+                    }
                 } else {
                     emptyStateView
                 }
+
+                // Invisible button to capture ⌘= (unmodified = key alongside ⌘+)
+                Button("") {
+                    appModel.zoomIn()
+                }
+                .keyboardShortcut("=", modifiers: .command)
+                .hidden()
 
                 if isTargetedForDrop {
                     RoundedRectangle(cornerRadius: 12)

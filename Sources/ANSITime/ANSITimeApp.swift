@@ -49,6 +49,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 public final class AppModel: ObservableObject {
+    public static let zoomPresets: [Double] = ZoomScale.presets
+
     @Published public var requestedURL: URL?
     @Published public var triggerOpenFile: Bool = false
     @Published public var selectedRows: Int? = nil // nil = Auto
@@ -58,6 +60,7 @@ public final class AppModel: ObservableObject {
     @Published public var autoRowsSummary: String = "25"
     @Published public var isSidebarVisible: Bool = false
     @Published public var triggerToggleSidebar: Bool = false
+    @Published public var zoomLevel: Double = ZoomScale.defaultZoom
 
     public init() {
         let storedFont = UserDefaults.standard.string(forKey: "defaultFont") ?? "9x16"
@@ -75,6 +78,22 @@ public final class AppModel: ObservableObject {
 
     public func requestOpenFile() {
         self.triggerOpenFile = true
+    }
+
+    public func zoomIn() {
+        setZoom(ZoomScale.zoomIn(from: zoomLevel))
+    }
+
+    public func zoomOut() {
+        setZoom(ZoomScale.zoomOut(from: zoomLevel))
+    }
+
+    public func resetZoom() {
+        setZoom(ZoomScale.defaultZoom)
+    }
+
+    public func setZoom(_ level: Double) {
+        zoomLevel = ZoomScale.clamp(level)
     }
 }
 
@@ -120,7 +139,41 @@ struct ANSITimeApp: App {
             }
 
             // View Menu
-            CommandMenu("View") {
+            CommandGroup(replacing: .sidebar) {
+                Button(appModel.isSidebarVisible ? "Hide Sidebar" : "Show Sidebar") {
+                    appModel.triggerToggleSidebar = true
+                }
+                .keyboardShortcut("s", modifiers: [.control, .command])
+            }
+
+            CommandGroup(after: .sidebar) {
+                Divider()
+
+                Button("Zoom In") {
+                    appModel.zoomIn()
+                }
+                .keyboardShortcut("+", modifiers: .command)
+
+                Button("Zoom Out") {
+                    appModel.zoomOut()
+                }
+                .keyboardShortcut("-", modifiers: .command)
+
+                Button("Actual Size") {
+                    appModel.resetZoom()
+                }
+                .keyboardShortcut("0", modifiers: .command)
+
+                Menu("Zoom Level") {
+                    ForEach(AppModel.zoomPresets, id: \.self) { level in
+                        Button(abs(appModel.zoomLevel - level) < 0.01 ? "✓ \(ZoomScale.formattedPercentage(level))" : "  \(ZoomScale.formattedPercentage(level))") {
+                            appModel.setZoom(level)
+                        }
+                    }
+                }
+
+                Divider()
+
                 Menu("Screen Rows") {
                     Button(appModel.selectedRows == nil ? "✓ Auto (\(appModel.autoRowsSummary))" : "  Auto (\(appModel.autoRowsSummary))") {
                         appModel.selectedRows = nil
@@ -149,13 +202,6 @@ struct ANSITimeApp: App {
                     appModel.showInspector.toggle()
                 }
                 .keyboardShortcut("i", modifiers: [.command, .option])
-
-                Divider()
-
-                Button(appModel.isSidebarVisible ? "Hide Sidebar" : "Show Sidebar") {
-                    appModel.triggerToggleSidebar = true
-                }
-                .keyboardShortcut("s", modifiers: [.control, .command])
             }
 
             // Application Menu
