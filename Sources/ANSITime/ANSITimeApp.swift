@@ -4,6 +4,34 @@ import AnsiCore
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var onOpenFile: ((URL) -> Void)?
+    private var toolbarObserver: NSObjectProtocol?
+
+    override init() {
+        super.init()
+        toolbarObserver = NotificationCenter.default.addObserver(
+            forName: NSToolbar.willAddItemNotification,
+            object: nil,
+            queue: .main
+        ) { notif in
+            guard let item = notif.userInfo?["item"] as? NSToolbarItem,
+                  let toolbar = notif.object as? NSToolbar else { return }
+            let identifier = item.itemIdentifier.rawValue
+            if identifier.contains("navigationSplitView.toggleSidebar") ||
+               identifier.contains("splitViewSeparator") {
+                DispatchQueue.main.async {
+                    if let index = toolbar.items.firstIndex(where: { $0 === item || $0.itemIdentifier == item.itemIdentifier }) {
+                        toolbar.removeItem(at: index)
+                    }
+                }
+            }
+        }
+    }
+
+    deinit {
+        if let observer = toolbarObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
 
     func application(_ sender: NSApplication, openFile filename: String) -> Bool {
         let url = URL(fileURLWithPath: filename)

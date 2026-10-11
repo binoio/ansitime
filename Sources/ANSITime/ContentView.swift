@@ -74,6 +74,13 @@ public struct ContentView: View {
             }
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Button(action: toggleSidebar) {
+                    Image(systemName: "sidebar.leading")
+                }
+                .help("Toggle Sidebar (⌃⌘S)")
+            }
+
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { appModel.showExportModal = true }) {
                     Label("Export & Share", systemImage: "square.and.arrow.up")
@@ -129,12 +136,28 @@ public struct ContentView: View {
             appModel.isSidebarVisible = (newVis != .detailOnly)
         }
         .onAppear {
+            cleanToolbarSuperfluousItems()
             if let url = appModel.requestedURL {
                 scanDirectory(containing: url)
                 selectedURL = url
                 loadFile(url: url)
             } else {
                 scanDirectoryAndLoadInitial()
+            }
+        }
+    }
+
+    private func cleanToolbarSuperfluousItems() {
+        DispatchQueue.main.async {
+            for window in NSApplication.shared.windows {
+                if let toolbar = window.toolbar {
+                    while let index = toolbar.items.firstIndex(where: {
+                        $0.itemIdentifier.rawValue.contains("navigationSplitView.toggleSidebar") ||
+                        $0.itemIdentifier.rawValue.contains("splitViewSeparator")
+                    }) {
+                        toolbar.removeItem(at: index)
+                    }
+                }
             }
         }
     }
